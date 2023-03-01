@@ -10,13 +10,15 @@ from gpiozero import PhaseEnableMotor
 import cv2 as cv
 import csv
 
+from time import time
+
 
 # SETUP
 # init engine and steering wheel
 engine = PhaseEnableMotor(phase=19, enable=26)
 kit = ServoKit(channels=16, address=0x40)
-steer = kit.servo[15]
-MAX_THROTTLE = 0.50
+steer = kit.servo[0]
+MAX_THROTTLE = 0.32
 STEER_CENTER = 95.5
 MAX_STEER = 60
 
@@ -31,8 +33,12 @@ js = joystick.Joystick(0)
 cv.startWindowThread()
 cam = cv.VideoCapture(0)
 cam.set(cv.CAP_PROP_FPS, 20)
+for i in reversed(range(60)):  # warm up camera
+    if not (i+1) % 20:
+        print(int((i + 1) / 20))
+    ret, frame = cam.read()
 # create data storage
-image_dir = '/home/wham/WHAM/train/data/' + datetime.now().strftime("%Y%m%d%H%M") + '/images/'
+image_dir = os.path.join(sys.path[0], 'data/', datetime.now().strftime("%Y%m%d%H%M"), 'images/')
 if not os.path.exists(image_dir):
     try:
         os.makedirs(image_dir)
@@ -41,10 +47,10 @@ if not os.path.exists(image_dir):
             raise
 label_path = os.path.join(os.path.dirname(os.path.dirname(image_dir)), 'labels.csv')
 # init vars
-record_data = True
 vel, ang = 0., 0.
 action = []
 frame_count = 0
+is_recording = False
 
 
 # MAIN
@@ -78,11 +84,15 @@ try:
                     engine.backward(-vel)
                 else:
                     engine.stop()
-                ang = STEER_CENTER + MAX_STEER * ax0_val
+                ang = STEER_CENTER - MAX_STEER * ax0_val
                 steer.angle = ang  # drive servo
                 action = [ax0_val, ax4_val]  # steer, throttle
                 print(f"engine speed: {vel}, steering angle: {ang}")
-        if record_data:
+            elif e.type == JOYBUTTONDOWN:
+                if js.get_button(0):
+                    is_recording = not is_recording
+                    print(f"is recording? {is_recording}")
+        if is_recording:
             image = cv.resize(frame, (120, 160))
             cv.imwrite(image_dir + str(frame_count)+'.jpg', image)  # save image
             label = [str(frame_count)+'.jpg'] + action
