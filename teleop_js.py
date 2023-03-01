@@ -12,9 +12,9 @@ import cv2 as cv
 # init engine and steering wheel
 engine = PhaseEnableMotor(phase=19, enable=26)
 kit = ServoKit(channels=16, address=0x40)
-steer = kit.servo[15]
-MAX_THROTTLE = 0.50
-STEER_CENTER = 95.5
+steer = kit.servo[0]
+MAX_THROTTLE = 0.32
+STEER_CENTER = 90.5
 MAX_STEER = 60
 engine.stop()
 steer.angle = STEER_CENTER
@@ -58,7 +58,7 @@ try:
                     engine.backward(-vel)
                 else:
                     engine.stop()
-                ang = STEER_CENTER + MAX_STEER * ax0_val
+                ang = STEER_CENTER - MAX_STEER * ax0_val
                 steer.angle = ang  # drive servo
                 action = (ax0_val, ax4_val)  # steer, throttle
                 print(f"throttle axis: {ax4_val}, steering axis: {ax0_val}\nengine speed: {vel}, steering angle: {ang}")
