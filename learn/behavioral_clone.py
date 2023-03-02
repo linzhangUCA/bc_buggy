@@ -30,7 +30,7 @@ class AutopilotDataset(Dataset):
 
 
 # Create dataset
-data_dir = os.path.join(sys.path[0], "data", "202303021415/")
+data_dir = os.path.join(sys.path[0], "data", "202303021432/")
 labels_path = os.path.join(data_dir, "labels.csv")
 image_dir = os.path.join(data_dir, "images/")
 dataset = AutopilotDataset(labels_path, image_dir)
@@ -156,7 +156,7 @@ for t in range(epochs):
     test_losses.append(epoch_loss_test)
 print("Done!")
 plt.plot(list(range(epochs)), train_losses, '--', list(range(epochs)), test_losses)
-plt.show()
+# plt.show()
 #
 # """
 # # Load an image from the dataset and make a prediction
@@ -170,6 +170,14 @@ plt.show()
 # """
 #
 # Save the model
-model_path = "/home/pbd0/playground/wham_buggy/train/models/donkey16epoch_20230224_1803.pth"
-torch.save(model.state_dict(), model_path)
-print(f"Saved autopilot model state to {model_path}")
+model_dir = os.path.join(sys.path[0], "models")
+model_name = "donkey16epoch_202303021432_lscb"
+if not os.path.exists(model_dir):
+    try:
+        os.makedirs(model_dir)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
+plt.savefig(os.path.join(model_dir, model_name+".png"))
+torch.save(model.state_dict(), os.path.join(model_dir, model_name+".pth"))
+print(f"Model: {model_name} Saved")
