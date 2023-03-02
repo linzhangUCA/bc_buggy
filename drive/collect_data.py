@@ -18,7 +18,7 @@ from time import time
 engine = PhaseEnableMotor(phase=19, enable=26)
 kit = ServoKit(channels=16, address=0x40)
 steer = kit.servo[0]
-MAX_THROTTLE = 0.32
+MAX_THROTTLE = 0.5
 STEER_CENTER = 95.5
 MAX_STEER = 60
 
@@ -91,7 +91,7 @@ try:
             elif e.type == JOYBUTTONDOWN:
                 if js.get_button(0):
                     is_recording = not is_recording
-                    print(f"is recording? {is_recording}")
+                    print(f"Recording? {is_recording}")
         if is_recording:
             image = cv.resize(frame, (120, 160))
             cv.imwrite(image_dir + str(frame_count)+'.jpg', image)  # save image
