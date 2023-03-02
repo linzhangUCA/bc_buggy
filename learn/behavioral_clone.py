@@ -30,7 +30,7 @@ class AutopilotDataset(Dataset):
 
 
 # Create dataset
-data_dir = os.path.join(sys.path[0], "data", "202303021432/")
+data_dir = os.path.join(sys.path[0], "data", "202303021620/")
 labels_path = os.path.join(data_dir, "labels.csv")
 image_dir = os.path.join(data_dir, "images/")
 dataset = AutopilotDataset(labels_path, image_dir)
@@ -171,7 +171,7 @@ plt.plot(list(range(epochs)), train_losses, '--', list(range(epochs)), test_loss
 #
 # Save the model
 model_dir = os.path.join(sys.path[0], "models")
-model_name = "donkey16epoch_202303021432_lscb"
+model_name = "donkey16epoch_202303021620_lsca105"
 if not os.path.exists(model_dir):
     try:
         os.makedirs(model_dir)
