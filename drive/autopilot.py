@@ -77,7 +77,7 @@ class DenseNetwork(nn.Module):
         return logits
 
 # Load modoel
-model_path = os.path.join(sys.path[0], "models", "donkey16epoch_202303021432_lscb.pth")
+model_path = os.path.join(sys.path[0], "models", "donkey16epoch_202303021620_lsca105.pth")
 autopilot = DonkeyNetwork()
 autopilot.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
 to_tensor = transforms.ToTensor()
