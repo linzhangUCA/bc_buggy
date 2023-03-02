@@ -1,10 +1,11 @@
 import sys
 import os
-from datetime import datetime
 import numpy as np
 from adafruit_servokit import ServoKit
 from gpiozero import PhaseEnableMotor
 import cv2 as cv
+
+from time import time
 
 import torch
 import torch.nn as nn
@@ -16,18 +17,21 @@ from torchvision import transforms
 # init engine and steering wheel
 engine = PhaseEnableMotor(phase=19, enable=26)
 kit = ServoKit(channels=16, address=0x40)
-steer = kit.servo[15]
-MAX_THROTTLE = 0.30
-STEER_CENTER = 95.5
+steer = kit.servo[0]
+MAX_THROTTLE = 0.32
+STEER_CENTER = 87
 MAX_STEER = 60
-
 engine.stop()
 steer.angle = STEER_CENTER
 # init camera
 cv.startWindowThread()
 cam = cv.VideoCapture(0)
 cam.set(cv.CAP_PROP_FPS, 20)
-# init autopilot
+for i in reversed(range(60)):  # warm up camera
+    if not (i+1) % 20:
+        print(int((i + 1) / 20))
+    ret, frame = cam.read()
+# Create network structures
 class DonkeyNetwork(nn.Module):
     def __init__(self):
         super().__init__()
@@ -72,9 +76,10 @@ class DenseNetwork(nn.Module):
         logits = self.linear_relu_stack(x)
         return logits
 
-
+# Load modoel
+model_path = os.path.join(sys.path[0], "models", "donkey16epoch_202303021432_lscb.pth")
 autopilot = DonkeyNetwork()
-autopilot.load_state_dict(torch.load("/home/wham/WHAM/train/models/donkey16epoch_20230224_1803.pth", map_location=torch.device('cpu')))
+autopilot.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
 to_tensor = transforms.ToTensor()
 
 
@@ -91,6 +96,9 @@ try:
         image = cv.resize(frame, (120, 160))
         im_tensor = to_tensor(image)
         pred_ax0, pred_ax4 = autopilot(im_tensor[None, :]).squeeze()
+        ang = STEER_CENTER - MAX_STEER * float(pred_ax0)
+        ang = np.clip(ang, STEER_CENTER - MAX_STEER, STEER_CENTER + MAX_STEER)
+        steer.angle = ang  # drive servo
         vel = -np.clip(float(pred_ax4), -MAX_THROTTLE, MAX_THROTTLE)
         if vel > 0:  # drive motor
             engine.forward(vel)
@@ -98,9 +106,6 @@ try:
             engine.backward(-vel)
         else:
             engine.stop()
-        ang = STEER_CENTER + MAX_STEER * float(pred_ax0)
-        ang = np.clip(ang, STEER_CENTER - MAX_STEER, STEER_CENTER + MAX_STEER)
-        steer.angle = ang  # drive servo
         print(f"engine speed: {vel}, steering angle: {ang}")
         if cv.waitKey(1) == ord('q'):
             engine.stop()

@@ -14,7 +14,7 @@ engine = PhaseEnableMotor(phase=19, enable=26)
 kit = ServoKit(channels=16, address=0x40)
 steer = kit.servo[0]
 MAX_THROTTLE = 0.32
-STEER_CENTER = 90.5
+STEER_CENTER = 87
 MAX_STEER = 60
 engine.stop()
 steer.angle = STEER_CENTER
@@ -51,6 +51,10 @@ try:
             if e.type == JOYAXISMOTION:
                 ax0_val = js.get_axis(0)
                 ax4_val = js.get_axis(4)
+                # steer
+                ang = STEER_CENTER - MAX_STEER * ax0_val
+                steer.angle = ang  # drive servo
+                # throttle
                 vel = -np.clip(ax4_val, -MAX_THROTTLE, MAX_THROTTLE)
                 if vel > 0:  # drive motor
                     engine.forward(vel)
@@ -58,8 +62,6 @@ try:
                     engine.backward(-vel)
                 else:
                     engine.stop()
-                ang = STEER_CENTER - MAX_STEER * ax0_val
-                steer.angle = ang  # drive servo
                 action = (ax0_val, ax4_val)  # steer, throttle
                 print(f"throttle axis: {ax4_val}, steering axis: {ax0_val}\nengine speed: {vel}, steering angle: {ang}")
         if cv.waitKey(1) == ord('q'):
