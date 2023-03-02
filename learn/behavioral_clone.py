@@ -1,3 +1,4 @@
+import sys
 import os
 import numpy as np
 import pandas as pd
@@ -5,7 +6,6 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, Dataset, random_split
 from torchvision import transforms
-import torch.nn.functional as F
 import matplotlib.pyplot as plt
 import cv2 as cv
 
@@ -29,14 +29,15 @@ class AutopilotDataset(Dataset):
         return image.float(), ang_axis_val, vel_axis_val
 
 
-labels_path = "/home/pbd0/playground/wham_buggy/train/data/20230224_1803/labels.csv"
-image_dir = "/home/pbd0/playground/wham_buggy/train/data/20230224_1803/images/"
+# Create dataset
+data_dir = os.path.join(sys.path[0], "data", "202303021415/")
+labels_path = os.path.join(data_dir, "labels.csv")
+image_dir = os.path.join(data_dir, "images/")
 dataset = AutopilotDataset(labels_path, image_dir)
 print("data length: ", len(dataset))
-# Define the size for train and test data
 dataset_size = len(dataset)
-train_size = round(dataset_size*0.9)
-test_size = dataset_size - train_size
+train_size = round(len(dataset)*0.9)
+test_size = len(dataset) - train_size
 print(f"training dataset size: {train_size}, test dataset size: {test_size}")
 # Load the datset (split into train and test)
 train_data, test_data = random_split(dataset, [train_size, test_size])
@@ -103,11 +104,11 @@ print(f"Using {device} device")
 
 
 def train(dataloader, model, loss_fn, optimizer):
-    size = len(dataloader.dataset)
+    num_samples = len(dataloader.dataset)
     model.train()
     epoch_loss = 0.
-    for batch, (image, speed, angle) in enumerate(dataloader):
-        target = torch.stack((speed, angle), -1)
+    for batch, (image, ang_axis_val, vel_axis_val) in enumerate(dataloader):
+        target = torch.stack((ang_axis_val, vel_axis_val), -1)
         X, y = image.to(device), target.to(device)
         # Compute prediction error
         pred = model(X)
@@ -119,7 +120,7 @@ def train(dataloader, model, loss_fn, optimizer):
         batch_loss, sample_count = batch_loss.item(), (batch + 1) * len(X)
         epoch_loss = (epoch_loss*batch + batch_loss) / (batch + 1)
         # if batch % 10 == 0:
-        print(f"loss: {batch_loss:>7f} [{sample_count:>5d}/{size:>5d}]")
+        print(f"loss: {batch_loss} [{sample_count}/{num_samples}]")
 
     return epoch_loss
 
