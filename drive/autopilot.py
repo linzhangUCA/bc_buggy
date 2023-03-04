@@ -18,7 +18,7 @@ from torchvision import transforms
 engine = PhaseEnableMotor(phase=19, enable=26)
 kit = ServoKit(channels=16, address=0x40)
 steer = kit.servo[0]
-MAX_THROTTLE = 0.32
+MAX_THROTTLE = 0.16
 STEER_CENTER = 87
 MAX_STEER = 60
 engine.stop()
@@ -77,7 +77,7 @@ class DenseNetwork(nn.Module):
         return logits
 
 # Load modoel
-model_path = os.path.join(sys.path[0], "models", "donkey16epoch_202303021620_lsca105.pth")
+model_path = os.path.join(sys.path[0], "models", "donkey20epoch_202303032141_home.pth")
 autopilot = DonkeyNetwork()
 autopilot.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
 to_tensor = transforms.ToTensor()

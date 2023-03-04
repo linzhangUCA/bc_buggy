@@ -18,7 +18,7 @@ from time import time
 engine = PhaseEnableMotor(phase=19, enable=26)
 kit = ServoKit(channels=16, address=0x40)
 steer = kit.servo[0]
-MAX_THROTTLE = 0.32
+MAX_THROTTLE = 0.16
 STEER_CENTER = 87
 MAX_STEER = 60
 engine.stop()
