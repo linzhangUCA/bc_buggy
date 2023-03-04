@@ -30,7 +30,7 @@ class AutopilotDataset(Dataset):
 
 
 # Create dataset
-data_dir = os.path.join(sys.path[0], "data", "202303021620/")
+data_dir = os.path.join(sys.path[0], "data", "202303032141_home/")
 labels_path = os.path.join(data_dir, "labels.csv")
 image_dir = os.path.join(data_dir, "images/")
 dataset = AutopilotDataset(labels_path, image_dir)
@@ -146,7 +146,7 @@ model = DonkeyNetwork().to(device)
 print(model)
 loss_fn = nn.MSELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
-epochs = 16
+epochs = 20
 train_losses, test_losses = [], []
 for t in range(epochs):
     print(f"Epoch {t+1}\n-------------------------------")
@@ -171,7 +171,7 @@ plt.plot(list(range(epochs)), train_losses, '--', list(range(epochs)), test_loss
 #
 # Save the model
 model_dir = os.path.join(sys.path[0], "models")
-model_name = "donkey16epoch_202303021620_lsca105"
+model_name = "donkey20epoch_202303032141_home"
 if not os.path.exists(model_dir):
     try:
         os.makedirs(model_dir)
