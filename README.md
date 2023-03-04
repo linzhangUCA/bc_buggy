@@ -5,3 +5,7 @@ Behavioral cloning buggy vehicle
 - [ ] Update README with usage.
 - [ ] Use start button to toggle data recording.
 - [ ] Use arguments to specify model and data.
+- [ ] Learn steering only.
+- [ ] Create model for stacked images.
+- [ ] Use button to delete previous data.
+
