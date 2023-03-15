@@ -13,11 +13,12 @@ import cv2 as cv
 engine = PhaseEnableMotor(phase=19, enable=26)
 kit = ServoKit(channels=16, address=0x40)
 steer = kit.servo[0]
-MAX_THROTTLE = 0.32
+THROTTLE = 0.25
 STEER_CENTER = 87
 MAX_STEER = 60
 engine.stop()
 steer.angle = STEER_CENTER
+ang = STEER_CENTER  # init value
 # init jotstick controller
 display.init()
 joystick.init()
@@ -40,6 +41,8 @@ try:
             cv.destroyAllWindows()
             pygame.quit()
             sys.exit()
+        # throttle
+        engine.forward(THROTTLE)
         for e in event.get():
             if e.type == QUIT:
                 print("QUIT detected, terminating...")
@@ -50,20 +53,12 @@ try:
                 sys.exit()
             if e.type == JOYAXISMOTION:
                 ax0_val = js.get_axis(0)
-                ax4_val = js.get_axis(4)
                 # steer
                 ang = STEER_CENTER - MAX_STEER * ax0_val
                 steer.angle = ang  # drive servo
-                # throttle
-                vel = -np.clip(ax4_val, -MAX_THROTTLE, MAX_THROTTLE)
-                if vel > 0:  # drive motor
-                    engine.forward(vel)
-                elif vel < 0:
-                    engine.backward(-vel)
-                else:
-                    engine.stop()
-                action = (ax0_val, ax4_val)  # steer, throttle
-                print(f"throttle axis: {ax4_val}, steering axis: {ax0_val}\nengine speed: {vel}, steering angle: {ang}")
+                action = (ax0_val)  # steer, throttle
+                print(f"steering axis: {ax0_val}")
+        print(f"engine speed: {THROTTLE}, steering angle: {ang}")
         if cv.waitKey(1) == ord('q'):
             engine.stop()
             engine.close()
